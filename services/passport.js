@@ -22,7 +22,27 @@ passport.use(new GoogleStrategy({
   callbackURL: '/auth/google/callback',
   proxy: true
 
-}, (accessToken, refreshToken, profile, done) => {
+}, 
+async(accessToken, refreshToken, profile, done) => {
+  // check if the userId exist
+  const existingUser = await User.findOne({ googleId: profile.id })
+
+    if (existingUser) {
+      // we already have a record of the user
+      return done(null, existingUser);
+    } 
+      // we don't have the user record, make a new record
+      const user = await new User({ googleId: profile.id }).save();
+      done(null, user)
+  }
+));
+
+
+
+
+  // before re-factor to async
+  /*
+  (accessToken, refreshToken, profile, done) => {
   // check if the userId exist
   User.findOne({ googleId: profile.id })
     .then((existingUser) => {
@@ -36,6 +56,5 @@ passport.use(new GoogleStrategy({
           .then(user => done(null, user));
       }
     });
-
-
-}));
+  }
+  */
